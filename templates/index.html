@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Spots - ChiSK8{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="text-center">
+    <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white mt-5 drop-shadow-lg">
+        Spots de Skate en Tu Ciudad
+    </h1>
+    <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl mx-auto mt-4">
+        Encuentra lugares increíbles para patinar, grabar y convivir.
+    </p>
+</div>
+
+<!-- Buscador -->
+<div class="max-w-3xl mx-auto mt-10">
+    <form method="GET" class="relative group">
+        <input
+            type="text"
+            name="q"
+            placeholder="🔍 Buscar por nombre, categoría, lugar o descripción..."
+            value="{{ query }}"
+            class="w-full py-4 px-6 rounded-2xl bg-white/80 dark:bg-gray-800/80 border border-gray-300
+                   dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-xl backdrop-blur-lg
+                   focus:ring-4 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all
+                   placeholder-gray-500 dark:placeholder-gray-400 text-lg">
+
+        <!-- Botón buscar -->
+        <button type="submit"
+            class="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white
+                   px-4 py-2 rounded-xl shadow-lg transition-all">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        <div class="absolute inset-0 rounded-2xl border border-white/20 dark:border-black/20
+                    pointer-events-none group-hover:scale-[1.03] transition-transform duration-300"></div>
+    </form>
+
+    {% if query %}
+        <p class="text-center mt-3 text-gray-600 dark:text-gray-300">
+            Resultados de: <span class="font-semibold text-blue-600 dark:text-blue-400">"{{ query }}"</span>
+        </p>
+    {% endif %}
+</div>
+
+<!-- Grid de spots -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-12">
+
+    {% for spot in spots %}
+    <div class="group bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-md overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:scale-[1.02] cursor-pointer spot-card"
+         data-spot-id="{{ spot.spot_id }}"
+         data-spot-name="{{ spot.name }}"
+         data-spot-description="{{ spot.description }}"
+         data-spot-place="{{ spot.place }}"
+         data-spot-difficulty="{{ spot.difficulty }}"
+         data-spot-likes="{{ spot.likes }}"
+         data-spot-location="{{ spot.location }}"
+         data-spot-image="{% if spot.images.first %}{{ spot.images.first.image.url }}{% endif %}">
+
+        <!-- Imagen -->
+        <div class="relative h-56 overflow-hidden">
+            {% if spot.images.first %}
+            <img src="{{ spot.images.first.image.url }}" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110">
+            {% else %}
+            <div class="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <i class="fa-solid fa-skating text-white text-6xl opacity-60"></i>
+            </div>
+            {% endif %}
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="p-6">
+
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all">
+                {{ spot.name }}
+            </h3>
+
+            <p class="text-gray-600 dark:text-gray-300 mt-3 line-clamp-2">{{ spot.description }}</p>
+
+            <p class="text-gray-500 dark:text-gray-500 mt-2 line-clamp-2">{{ spot.place }}</p>
+
+            <!-- Dificultad -->
+            <div class="flex items-center mt-4">
+                {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= spot.difficulty %}
+                        <i class="fa-solid fa-star text-yellow-400"></i>
+                    {% else %}
+                        <i class="fa-regular fa-star text-gray-400 dark:text-gray-500"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">{{ spot.difficulty }}/5</span>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex space-x-3 mt-6">
+                <a href="{{ spot.location }}" target="_blank"
+                   class="flex-1 bg-blue-600 text-white py-2 rounded-xl text-center font-semibold hover:bg-blue-700 transition-all">
+                    <i class="fa-solid fa-map-location-dot mr-1"></i> Ver Spot
+                </a>
+
+                <button onclick="likeSpot('{{ spot.spot_id }}', this)"
+                        class="like-btn px-4 bg-gray-200 dark:bg-gray-700 rounded-xl text-gray-900
+                               dark:text-gray-200 hover:scale-110 transition transform relative overflow-visible">
+                    <i class="fa-solid fa-heart"></i>
+                    <span id="likes-{{ spot.spot_id }}">{{ spot.likes }}</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Paginación -->
+<div class="flex justify-center mt-12 space-x-2">
+
+    {% if spots.has_previous %}
+        <a href="?q={{ query }}&page={{ spots.previous_page_number }}"
+           class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            ← Anterior
+        </a>
+    {% endif %}
+
+    <span class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow">
+        Página {{ spots.number }} de {{ spots.paginator.num_pages }}
+    </span>
+
+    {% if spots.has_next %}
+        <a href="?q={{ query }}&page={{ spots.next_page_number }}"
+           class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+            Siguiente →
+        </a>
+    {% endif %}
+</div>
+
+<!-- CTA -->
+<div class="text-center mt-20 mb-10">
+    <button class="relative overflow-hidden bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 px-10 py-3 rounded-xl font-bold shadow-lg hover:shadow-2xl transition-all group">
+        <a href="{% url 'add_spot' %}"><span class="relative z-10">Agregar Nuevo Spot</span></a>
+        <div class="absolute inset-0 bg-blue-600 dark:bg-blue-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+    </button>
+</div>
+
+<!-- Incluir Modal separado -->
+{% include 'components/modal.html' %}
+<link rel="stylesheet" href="{% static 'css/modal.css' %}">
+<script src="{% static 'js/modal.js' %}"></script>
+
+{% endblock %}

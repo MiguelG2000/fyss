@@ -1,0 +1,25 @@
+<nav class="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-gray-300 dark:border-gray-700 shadow-md transition-all duration-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+
+            <!-- Logo -->
+            <a href="{% url 'index' %}" class="flex items-center text-2xl font-extrabold tracking-wider text-blue-600 dark:text-blue-400 hover:scale-105 transition-transform duration-300">
+                <i class="fa-solid fa-skating mr-2"></i>
+                FYSS - Find Your Skate Spot
+            </a>
+
+            <!-- Acciones -->
+            <div class="flex items-center space-x-4">
+
+                <!-- Botón modo oscuro -->
+                <button onclick="toggleDarkMode()"
+                        class="p-2 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow hover:shadow-xl hover:scale-110 transition-all duration-300">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</nav>

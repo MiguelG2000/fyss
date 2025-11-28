@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChiSK8{% endblock %}</title>
+
+    <!-- Tailwind CDN con darkMode activado -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 18s linear infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body class="relative bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-all duration-500 overflow-x-hidden">
+
+    <!-- Fondo urbano animado -->
+    <div class="fixed inset-0 -z-10 pointer-events-none opacity-25 dark:opacity-40">
+        <div class="absolute inset-0 bg-[url('https://static.vecteezy.com/system/resources/previews/007/008/586/non_2x/skateboard-and-longboards-are-a-seamless-pattern-a-white-outline-on-a-dark-background-print-on-clothes-illustration-vector.jpg')] bg-cover bg-center animate-float"></div></div>
+    </div>
+
+    <!-- Navbar -->
+    {% block navbar %}
+        {% include 'navbar.html' %}
+    {% endblock %}
+
+    <!-- Mensajes Django -->
+    <div class="max-w-7xl mx-auto p-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 text-sm rounded-xl shadow-md mt-4
+                    {% if message.tags == 'error' %}bg-red-200/80 dark:bg-red-900/80 text-red-900 dark:text-red-100
+                    {% elif message.tags == 'success' %}bg-green-200/80 dark:bg-green-900/80 text-green-900 dark:text-green-100
+                    {% else %}bg-blue-200/80 dark:bg-blue-900/80 text-blue-900 dark:text-blue-100
+                    {% endif %}">
+                    <i class="fa-solid {% if message.tags == 'error' %}fa-circle-xmark
+                    {% elif message.tags == 'success' %}fa-circle-check
+                    {% else %}fa-circle-info
+                    {% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Contenido -->
+    <main class="max-w-7xl mx-auto p-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% block footer %}
+        {% include 'footer.html' %}
+    {% endblock %}
+
+<script>
+    function toggleDarkMode() {
+        const html = document.documentElement;
+        html.classList.toggle('dark');
+        localStorage.setItem('darkMode', html.classList.contains('dark'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    });
+
+    function likeSpot(spotId, btn) {
+
+    // Petición al servidor
+    fetch(`/like/${spotId}/`)
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.likes !== undefined) {
+                document.getElementById(`likes-${spotId}`).innerText = data.likes;
+            }
+
+            // --- EFECTO DE BOTÓN ---
+            btn.classList.add("like-active");
+
+            // --- EFECTO DE CORAZONES FLOTANTES ---
+            for (let i = 0; i < 6; i++) {
+                const heart = document.createElement("div");
+                heart.classList.add("heart-burst");
+                heart.innerHTML = "❤";
+
+                // Posición aleatoria cerca del botón
+                heart.style.left = (10 + Math.random() * 20) + "px";
+                heart.style.top = (-5 + Math.random() * 10) + "px";
+
+                btn.appendChild(heart);
+
+                // Se elimina tras la animación
+                setTimeout(() => heart.remove(), 1100);
+            }
+        });
+}
+</script>
+<style>
+    /* Efecto de corazones flotando */
+    .heart-burst {
+        position: absolute;
+        font-size: 16px;
+        color: red;
+        animation: floatUp 1s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-40px) scale(1.8); opacity: 0; }
+    }
+
+    /* Botón rojo al dar like */
+    .like-active {
+        background-color: #ff4d6d !important;
+        color: white !important;
+        transform: scale(1.2);
+    }
+
+    /* Latido */
+    .like-active i {
+        animation: heartbeat 0.4s ease-in-out;
+    }
+
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.3); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+</style>
+
+</body>
+</html>
