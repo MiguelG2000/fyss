@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: card.dataset.spotName,
                 description: card.dataset.spotDescription,
                 place: card.dataset.spotPlace,
+                category: card.dataset.spotCategory,
                 difficulty: card.dataset.spotDifficulty,
                 likes: card.dataset.spotLikes,
                 location: card.dataset.spotLocation,
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             modalBody.innerHTML = modalTemplate(data);
 
-            modal.classList.remove('hidden');
+            modal.classList.remove('show');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
         });
@@ -51,8 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // PLANTILLA DINÁMICA DEL MODAL
 function modalTemplate(spot) {
+
+    let diff = spot.difficulty;
+
+    if (typeof diff === "string") {
+        diff = diff.replace(/[^0-9]/g, "");
+    }
+
+    const difficultyNum = parseInt(diff);
+    const difficulty = !isNaN(difficultyNum) ? difficultyNum : 0;
+    const clamped = Math.min(5, Math.max(0, difficulty));
+    const widthPercent = (clamped / 5) * 100;
+
     return `
         <div class="p-6">
+
             <div class="h-64 rounded-xl overflow-hidden mb-6">
                 ${spot.image ? 
                     `<img src="${spot.image}" class="w-full h-full object-cover">`
@@ -63,38 +77,59 @@ function modalTemplate(spot) {
                 `}
             </div>
 
-            <h2 class="text-3xl font-bold dark:text-white">${spot.name}</h2>
+            <h2 class="text-3xl font-bold dark:text-white mb-2">${spot.name || ''}</h2>
 
-            <p class="mt-4 text-gray-700 dark:text-gray-300 leading-relaxed">${spot.description}</p>
+            <p class="inline-block bg-blue-600/20 dark:bg-blue-400/20 text-blue-700 
+                       dark:text-blue-300 px-3 py-1 rounded-lg text-sm font-semibold mb-3">
+                ${spot.category || 'Sin categoría'}
+            </p>
 
-            <p class="mt-4 text-gray-600 dark:text-gray-400">${spot.place}</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-3">
+                <i class="fa-solid fa-location-dot mr-1 text-blue-600 dark:text-blue-400"></i>
+                ${spot.place || ''}
+            </p>
 
-            <div class="mt-4 flex items-center justify-between">
-                <div class="flex items-center">
-                    ${Array.from({ length: 5 }).map((_, i) =>
-                        `<i class="fa-solid fa-star ${i < spot.difficulty ? "text-yellow-400" : "text-gray-400"}"></i>`
-                    ).join('')}
-                    <span class="ml-2 text-gray-500">${spot.difficulty}/5</span>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                ${spot.description || ''}
+            </p>
+
+            <div class="mt-4 mb-8">
+                <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Dificultad
+                </p>
+            
+                <div class="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                        class="h-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 rounded-full transition-all duration-500"
+                        style="width: ${widthPercent}%;">
+                    </div>
                 </div>
 
-                <div class="text-red-500 font-semibold flex items-center">
-                    <i class="fa-solid fa-heart mr-2"></i>
-                    ${spot.likes} likes
-                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Nivel: ${clamped} / 5
+                </p>
             </div>
 
-            <div class="mt-8 flex gap-3">
-                <a href="${spot.location}" target="_blank"
+            <div class="flex gap-3">
+
+                <a href="${spot.location || '#'}" target="_blank"
                    class="flex-1 bg-blue-600 text-white py-3 rounded-xl text-center font-semibold hover:bg-blue-700">
-                    Ver en Maps
+                    <i class="fa-solid fa-map-location-dot mr-1"></i> Ver Spot
                 </a>
 
-                <button class="like-btn bg-gray-300 dark:bg-gray-700 py-3 px-5 rounded-xl"
+                <button class="like-btn bg-gray-300 dark:bg-gray-700 py-3 px-5 rounded-xl transition hover:scale-110"
                         onclick="likeSpot('${spot.id}', this)">
                     <i class="fa-solid fa-heart mr-2"></i>
-                    <span id="modal-likes-${spot.id}">${spot.likes}</span>
+                    <span id="likes-${spot.id}">
+                        ${spot.likes || 0}
+                    </span>
                 </button>
+
             </div>
         </div>
     `;
 }
+
+
+
+
